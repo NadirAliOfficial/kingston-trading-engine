@@ -96,3 +96,4 @@ python main.py
 - Full trade lifecycle logging (entry, exit, blocked)
 <!-- updated: 2025-12-09 -->
 
+
