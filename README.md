@@ -94,3 +94,4 @@ python main.py
 - IBKR paper execution via `ib_insync`
 - Exit rule monitoring: MA20 cross, RSI < 50, 2% trailing stop, 2% hard stop
 - Full trade lifecycle logging (entry, exit, blocked)
+<!-- updated: 2026-01-28-04 -->
