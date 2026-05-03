@@ -17,7 +17,7 @@ def generate_signals(df, config):
     ma200 = close.rolling(config.MA_200).mean()
     ma20 = close.rolling(config.MA_20).mean()
     rsi = _compute_rsi(close, config.RSI_PERIOD)
-    avg_volume = volume.rolling(20).mean()
+    avg_volume = volume.rolling(config.VOLUME_AVG_PERIOD).mean()
     high_5d = high.rolling(config.HIGH_LOOKBACK).max().shift(1)
 
     latest = {
