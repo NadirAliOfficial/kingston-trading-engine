@@ -4,7 +4,7 @@ def check_market_filter(spy_latest, config):
     return spy_above_ma200 and spy_rsi_ok
 
 
-def make_decision(ticker, signals, market_filter_pass):
+def make_decision(signals, market_filter_pass):
     if not market_filter_pass:
         return "BLOCK", "market filter failed: SPY below MA200 or RSI < 50"
 

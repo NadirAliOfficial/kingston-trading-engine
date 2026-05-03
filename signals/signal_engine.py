@@ -32,6 +32,7 @@ def generate_signals(df, config):
     }
 
     signals = {
+        "price_above_ma20": latest["price"] > latest["ma20"],
         "price_above_ma50": latest["price"] > latest["ma50"],
         "ma50_above_ma200": latest["ma50"] > latest["ma200"],
         "rsi_in_range": config.RSI_ENTRY_LOW <= latest["rsi"] <= config.RSI_ENTRY_HIGH,
