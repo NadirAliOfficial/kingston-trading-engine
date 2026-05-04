@@ -2,9 +2,9 @@
   "open_positions": [
     {
       "ticker": "AAPL",
-      "shares": 1781,
-      "entry_price": 280.1400146484375,
-      "peak_price": 280.1400146484375,
+      "shares": 1801,
+      "entry_price": 276.9,
+      "peak_price": 276.9,
       "entry_date": "2026-05-04"
     }
   ],
