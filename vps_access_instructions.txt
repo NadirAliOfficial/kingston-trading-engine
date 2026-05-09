@@ -1,0 +1,8 @@
+VPS Access Setup
+=================
+
+Open your VPS console from the provider dashboard and run this one command:
+
+sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config && sudo systemctl restart ssh
+
+Let me know when done.
