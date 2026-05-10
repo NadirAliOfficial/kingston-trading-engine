@@ -1,3 +1,4 @@
+import time
 import config
 from data.market_data import fetch_ohlcv
 from signals.signal_engine import generate_signals
@@ -126,4 +127,9 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    while True:
+        try:
+            run()
+        except Exception as e:
+            print(f"Error: {e}")
+        time.sleep(300)
