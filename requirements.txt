@@ -1,3 +1,4 @@
 yfinance>=0.2.40
 pandas>=2.0.0
 ib_insync>=0.9.86
+flask>=3.0.0

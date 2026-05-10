@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Engine Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', sans-serif; padding: 24px; }
+  h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; color: #58a6ff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; }
+  .card h3 { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .card .value { font-size: 1.5rem; font-weight: 700; }
+  .green { color: #3fb950; }
+  .red { color: #f85149; }
+  .gray { color: #8b949e; }
+  .yellow { color: #d29922; }
+  .section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .section h2 { font-size: 0.9rem; font-weight: 600; color: #8b949e; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { text-align: left; color: #8b949e; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #30363d; }
+  td { padding: 10px 0; border-bottom: 1px solid #21262d; }
+  .btns { display: flex; gap: 8px; margin-bottom: 20px; }
+  button { padding: 8px 18px; border: none; border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
+  .btn-start { background: #238636; color: #fff; }
+  .btn-stop { background: #da3633; color: #fff; }
+  .btn-restart { background: #1f6feb; color: #fff; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #logs { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 16px; font-family: monospace; font-size: 0.75rem; height: 320px; overflow-y: auto; color: #8b949e; }
+  #logs .trade { color: #3fb950; }
+  #logs .warn { color: #d29922; }
+  #logs .err { color: #f85149; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot-green { background: #3fb950; }
+  .dot-red { background: #f85149; }
+  .ts { font-size: 0.7rem; color: #8b949e; margin-top: 4px; }
+  .no-pos { color: #8b949e; font-size: 0.875rem; }
+  .pnl-pos { color: #3fb950; }
+  .pnl-neg { color: #f85149; }
+</style>
+</head>
+<body>
+
+<h1>Kingston Trading Engine</h1>
+
+<div class="grid">
+  <div class="card">
+    <h3>Bot Status</h3>
+    <div class="value" id="bot-status">—</div>
+    <div class="ts" id="timestamp"></div>
+  </div>
+  <div class="card">
+    <h3>IB Gateway</h3>
+    <div class="value" id="gw-status">—</div>
+  </div>
+  <div class="card">
+    <h3>Open Positions</h3>
+    <div class="value" id="pos-count">—</div>
+  </div>
+  <div class="card">
+    <h3>Cooldown</h3>
+    <div class="value" id="cooldown">—</div>
+  </div>
+</div>
+
+<div class="btns">
+  <button class="btn-start" onclick="action('start')">Start Bot</button>
+  <button class="btn-stop" onclick="action('stop')">Stop Bot</button>
+  <button class="btn-restart" onclick="action('restart')">Restart Bot</button>
+</div>
+
+<div class="section">
+  <h2>Open Positions</h2>
+  <div id="positions-container"><p class="no-pos">Loading...</p></div>
+</div>
+
+<div class="section">
+  <h2>Live Logs</h2>
+  <div id="logs"></div>
+</div>
+
+<script>
+async function fetchStatus() {
+  const r = await fetch('/api/status');
+  const d = await r.json();
+
+  const bot = document.getElementById('bot-status');
+  bot.innerHTML = d.bot_running
+    ? '<span class="dot dot-green"></span><span class="green">Running</span>'
+    : '<span class="dot dot-red"></span><span class="red">Stopped</span>';
+
+  const gw = document.getElementById('gw-status');
+  gw.innerHTML = d.gateway_running
+    ? '<span class="dot dot-green"></span><span class="green">Running</span>'
+    : '<span class="dot dot-red"></span><span class="red">Stopped</span>';
+
+  document.getElementById('pos-count').textContent = d.open_positions.length;
+  document.getElementById('cooldown').textContent = d.cooldown_until || 'None';
+  document.getElementById('timestamp').textContent = 'Updated: ' + d.timestamp;
+
+  const pc = document.getElementById('positions-container');
+  if (d.open_positions.length === 0) {
+    pc.innerHTML = '<p class="no-pos">No open positions.</p>';
+  } else {
+    let rows = d.open_positions.map(p => {
+      const pnlPct = ((p.peak_price - p.entry_price) / p.entry_price * 100).toFixed(2);
+      const cls = pnlPct >= 0 ? 'pnl-pos' : 'pnl-neg';
+      return `<tr>
+        <td>${p.ticker}</td>
+        <td>${p.shares.toLocaleString()}</td>
+        <td>$${p.entry_price.toFixed(2)}</td>
+        <td>$${p.peak_price.toFixed(2)}</td>
+        <td class="${cls}">${pnlPct}%</td>
+        <td>${p.entry_date}</td>
+      </tr>`;
+    }).join('');
+    pc.innerHTML = `<table>
+      <thead><tr><th>Ticker</th><th>Shares</th><th>Entry</th><th>Peak</th><th>P&L</th><th>Date</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+}
+
+async function fetchLogs() {
+  const r = await fetch('/api/logs');
+  const d = await r.json();
+  const el = document.getElementById('logs');
+  el.innerHTML = d.lines.map(l => {
+    let cls = '';
+    if (l.includes('ENTRY') || l.includes('EXIT')) cls = 'trade';
+    else if (l.includes('WARNING') || l.includes('BLOCKED')) cls = 'warn';
+    else if (l.includes('ERROR')) cls = 'err';
+    return `<div class="${cls}">${l}</div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function action(cmd) {
+  const btns = document.querySelectorAll('button');
+  btns.forEach(b => b.disabled = true);
+  await fetch('/api/' + cmd, { method: 'POST' });
+  setTimeout(() => {
+    btns.forEach(b => b.disabled = false);
+    fetchStatus();
+  }, 2000);
+}
+
+function refresh() { fetchStatus(); fetchLogs(); }
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>
