@@ -52,7 +52,7 @@ def _service_active(service):
 
 def _read_positions():
     try:
-        with open(POSITIONS_FILE) as f:
+        with open(POSITIONS_FILE, encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return {"open_positions": [], "daily_losses": {}, "cooldown_until": None}
@@ -64,7 +64,7 @@ def _read_logs(n=60):
     for name in [f"signals_{today}.log", f"trades_{today}.log"]:
         path = os.path.join(LOGS_DIR, name)
         if os.path.exists(path):
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 lines += f.readlines()
     lines.sort()
     return [l.rstrip() for l in lines[-n:]]
