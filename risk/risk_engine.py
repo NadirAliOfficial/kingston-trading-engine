@@ -6,7 +6,7 @@ STATE_FILE = "state/positions.json"
 
 
 def _load():
-    with open(STATE_FILE) as f:
+    with open(STATE_FILE, encoding="utf-8") as f:
         return json.load(f)
 
 
